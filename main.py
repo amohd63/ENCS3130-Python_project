@@ -1,4 +1,5 @@
 import os, re
+import numpy as np
 from Student import *
 
 
@@ -73,7 +74,40 @@ def add_student_information(courses_list):
 def update():
     print('test')
 
-
+def student_semester(student, courses_list):
+    if (';' or '-' or '/') not in student:
+        raise Exception('Student information is not formatted.')
+    year_semester, courses_grades = student.split(';')
+    if not re.match("20[0-9]{2}-20[0-9]{2}/[1-3]", year_semester.replace(' ', '')):
+        raise Exception('Year/Semester is not following the format.')
+    #if ',' not in courses_grades: recheck
+    #   raise Exception('Courses')
+    courses_grades = courses_grades.split(',')
+    if not all(re.match("ENCS|ENEE[2-5][1-4][0-9]{2} [0-9]{2}", course_grade) for course_grade in courses_grades):
+        raise Exception('Course ID/grade is not formatted.')
+    year, semester_number = year_semester.split('/')
+    start_year, end_year = year.split('-')
+    if semester_number.isdigit() and int(semester_number) not in range(1, 3):
+        raise Exception('There are three semesters only (1, 2, 3).')
+    if int(end_year) - int(start_year) != 1:
+        raise Exception('The end year of the semester and the start must differ at one only.')
+    courses, grades = map(list, zip(*(course_grade.split() for course_grade in courses_grades)))
+    i = 0
+    for course, grade in zip(courses, grades):  # not done
+        if course not in courses_list or grade < 0:
+            courses.pop(i)
+            grades.pop(i)
+            i -= 1
+        i += 1
+    student_courses = [Course(courses[i], grades[i]) for i in range(len(courses))]
+    remaining_courses = set(courses_list).difference(courses)
+    taken_hours = 0
+    for course in student_courses:
+        taken_hours += course.get_course_hours()
+    np.array(grades, dtype=int)
+    semester_average = sum(grades)/len(grades)
+    semester= Semester(year, int(semester_number), student_courses)
+    return semester, taken_hours, remaining_courses, semester_average
 courses_list = []
 students = []
 with open('courses') as f:
@@ -86,32 +120,7 @@ for file in files:
         lines = open(str(file), 'r').readlines()
         semesters = []
         for line in lines:
-            if (';' or '-' or '/') not in line:
-                continue
-            year_semester, courses_grades = line.split(';')
-            if not re.match("[0-9]{4}-[0-9]{4}/[1-3]", year_semester.replace(' ', '')):
-                continue
-            if ',' not in courses_grades:
-                continue
-            courses_grades = courses_grades.split(',')
-            if not all(re.match("ENCS|ENEE[2-5][1-4][0-9]{2} [0-9]{2}", course_grade) for course_grade in courses_grades):
-                continue
-            year, semester_number = year_semester.split('/')
-            start_year, end_year = year.split('-')
-            if semester_number.isdigit() and int(semester_number) not in range(1, 3):
-                print('Error')
-            if int(end_year) - int(start_year) != 1:
-                print('Error')
-            courses, grades = map(list, zip(*(course_grade.split() for course_grade in courses_grades)))
-            i = 0
-            for course, grade in zip(courses, grades):  # not done
-                if course not in courses_list or grade < 0:
-                    courses.pop(i)
-                    grades.pop(i)
-                    i -= 1
-                i += 1
-            student_courses = [Course(courses[i], grades[i]) for i in range(len(courses))]
-            semesters.append(Semester(year, int(semester_number), semester_number))
+
         students.append(Student(int(file), semesters))
 
 
