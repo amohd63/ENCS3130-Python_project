@@ -191,3 +191,5 @@ elif login_type.lower() == 'user':
     student_menu()
 else:
     'Not supported'
+
+print(students[0].get_semesters())
