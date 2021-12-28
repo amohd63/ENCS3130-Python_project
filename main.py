@@ -144,7 +144,9 @@ def student_statistics(students):
             if student.get_student_id() == student_id:
                 std = student
         print('Taken hours: ' + str(std.get_taken_hours()))
-        print('Remaining courses: ' + str(std.get_remaning_courses()))
+        print('Remaining courses: ' + str(std.get_remaining_courses()))
+        print('Average per semester: ' + str(std.get_average_per_semester()))
+        print('Overall average: ' + str(std.get_overall_average()))
 
 
 def student_semester(student, courses_list):
@@ -214,7 +216,7 @@ print('|-----------------------------------|'
        + '\n|-----------------------------------|'
        + '\n'
        + '\n|---------------Admin---------------|'
-       + '\n|---------------User----------------|\n')
+       + '\n|---------------Student-------------|\n')
 login_type = input("Login: ")
 print('\n')
 if login_type.lower() == 'admin':
@@ -227,11 +229,13 @@ if login_type.lower() == 'admin':
             add_new_record(new_student_id)
         elif option == 2:
             add_student_information(courses_list, students)
+        elif option == 3:
+            update(courses_list, students)
+        elif option == 4:
+            student_statistics(students)
     else:
         exit(1)
-elif login_type.lower() == 'user':
+elif login_type.lower() == 'student':
     student_menu()
 else:
     'Not supported'
-
-print(students[0].get_semesters())
