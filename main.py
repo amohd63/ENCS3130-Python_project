@@ -2,6 +2,10 @@ import os, re
 import numpy as np
 from copy import deepcopy
 from Student import *
+# check if year or semester exists
+# if grade is updated
+# if course retaken
+#
 
 
 def admin_menu():
@@ -20,7 +24,7 @@ def student_menu():
 
 def add_new_record(new_student_id: int):
     files = [f for f in os.listdir('.') if os.path.isfile(f)]
-    if new_student_id in files:
+    if str(new_student_id) in files:
         raise Exception('Student already exists in the system!')
     if len(str(new_student_id)) == 7:
         f = open(str(new_student_id), 'w+')
@@ -33,13 +37,14 @@ def add_student_information(courses_list: List[str], students: List[Student]):
     student_id = input('Student ID: ')
     if student_id.isdigit() and len(student_id) == 7:
         try:
+            add_new_record(int(student_id))
             students.append(Student(int(student_id)))
         except Exception as e:
             if 'invalid' in str(e):
                 print(str(e))
                 return
         # we have to check if the semester doesn't exist before
-        student = open(str(student_id), 'w')
+        student_file = open(str(student_id), 'w')
         year = input('Year (start-end): ')
         semester = input('Semester (1, 2, 3): ')
         student_info += str(year) + '/' + str(semester) + ' ; '
@@ -94,15 +99,52 @@ def add_student_information(courses_list: List[str], students: List[Student]):
                 current_student.set_taken_hours(taken_hours)
                 current_student.set_remaining_courses(list(remaining_courses))
                 current_student.set_overall_average(overall_average)
-            student.write(str(student_info))
+            student_file.write(str(student_info))
         except Exception as e:
             print(str(e))
     else:
         raise Exception('Student ID is invalid!')
 
 
-def update():
-    print('test')
+def update(course_list, students):
+    student_id = input('Enter student ID: ')
+    student_course = input('Enter course ID: ')
+    new_grade = input('Enter grade: ')
+    if student_id.isdigit() and student_course in course_list and new_grade.isdigit() and -1 < int(new_grade) < 100:
+        student = None
+        for std in students:
+            if std.get_student_id() == int(student_id):
+                student = std
+                break
+        semesters = student.get_semesters()
+        ave_per_semester = student.set_average_per_semester()
+        index = 0
+        for i in range(len(semesters)):
+            for course in semesters[i].get_courses():
+                if course == student_course:
+                    index = i
+                    course.set_grade(int(new_grade))
+                    break
+        grades_sum = 0
+        courses = semesters[index].get_courses()
+        for course in courses:
+            grades_sum += course.get_grade()
+        ave_per_semester[index] = grades_sum / len(courses)
+        overall_average = sum(ave_per_semester)/len(ave_per_semester)
+        student.set_average_per_semester(ave_per_semester)
+        student.set_overall_average(overall_average)
+
+
+def student_statistics(students):
+    student_id = input('Enter student ID: ')
+    if student_id.isdigit() and len(student_id) == 7:
+        student_id = int(student_id)
+        std = None
+        for student in students:
+            if student.get_student_id() == student_id:
+                std = student
+        print('Taken hours: ' + str(std.get_taken_hours()))
+        print('Remaining courses: ' + str(std.get_remaning_courses()))
 
 
 def student_semester(student, courses_list):
