@@ -10,27 +10,25 @@ def admin_menu():
     print('3. Update')
     print('4. Student statistics')
     print('5. Global statistics')
-    print('6. Searching')
-    return input('Enter option: ')
+    print('6. Searching\n')
 
 
 def student_menu():
     print('1. Student statistics')
-    print('2. Global statistics')
-    return input('Enter option: ')
+    print('2. Global statistics\n')
 
 
-def add_new_record(new_student_id):
+def add_new_record(new_student_id: int):
     files = [f for f in os.listdir('.') if os.path.isfile(f)]
     if new_student_id in files:
         raise Exception('Student already exists in the system!')
-    if new_student_id.isdigit() and len(new_student_id) == 7:
+    if len(str(new_student_id)) == 7:
         f = open(str(new_student_id), 'w+')
     else:
         raise Exception('Student ID is invalid!')
 
 
-def add_student_information(courses_list, students):
+def add_student_information(courses_list: List[str], students: List[Student]):
     student_info = ''
     student_id = input('Student ID: ')
     if student_id.isdigit() and len(student_id) == 7:
@@ -91,10 +89,10 @@ def add_student_information(courses_list, students):
                 overall_average = sum(average_per_semester) / len(average_per_semester)
                 taken_hours += s_taken_hours
                 remaining_courses = set(remaining_courses).intersection(s_remaining_courses)
-                current_student.set_semesters(semester)
+                current_student.set_semesters(semesters)
                 current_student.set_average_per_semester(average_per_semester)
                 current_student.set_taken_hours(taken_hours)
-                current_student.set_remaining_courses(remaining_courses)
+                current_student.set_remaining_courses(list(remaining_courses))
                 current_student.set_overall_average(overall_average)
             student.write(str(student_info))
         except Exception as e:
@@ -116,8 +114,6 @@ def student_semester(student, courses_list):
     #if ',' not in courses_grades: recheck
     #   raise Exception('Courses')
     courses_grades = courses_grades.split(',')
-    if not all(re.match("ENCS|ENEE[2-5][1-4][0-9]{2} [0-9]{2}", course_grade) for course_grade in courses_grades):
-        raise Exception('Course ID/grade is not formatted.')
     year, semester_number = year_semester.split('/')
     start_year, end_year = year.split('-')
     if semester_number.isdigit() and int(semester_number) not in range(1, 3):
@@ -127,20 +123,20 @@ def student_semester(student, courses_list):
     courses, grades = map(list, zip(*(course_grade.split() for course_grade in courses_grades)))
     i = 0
     for course, grade in zip(courses, grades):  # not done
-        if course not in courses_list or grade < 0:
-            courses.pop(i)
-            grades.pop(i)
+        if course not in courses_list or int(grade) < 0:
+            courses_grades.pop(i)
             i -= 1
         i += 1
+    courses, grades = map(list, zip(*(course_grade.split() for course_grade in courses_grades)))
     student_courses = [Course(courses[i], grades[i]) for i in range(len(courses))]
     remaining_courses = set(courses_list).difference(courses)
     taken_hours = 0
     for course in student_courses:
-        taken_hours += course.get_course_hours()
-    np.array(grades, dtype=int)
+        taken_hours += int(course.get_course_hours())
+    grades = np.array(grades, dtype=int)
     semester_average = sum(grades)/len(grades)
     semester = Semester(year, int(semester_number), student_courses)
-    return semester, taken_hours, remaining_courses, semester_average
+    return semester, taken_hours, list(remaining_courses), semester_average
 
 
 courses_list = []
@@ -151,7 +147,7 @@ with open('courses') as f:
 
 files = [f for f in os.listdir('.') if os.path.isfile(f)]
 for file in files:
-    if file.isdigit() and len(file) == 7:
+    if file.isdigit() and len(file) == 7 and os.stat(file).st_size != 0:
         lines = open(str(file), 'r').readlines()
         semesters = []
         taken_hours = 0
@@ -171,12 +167,27 @@ for file in files:
         students.append(Student(int(file), semesters, taken_hours, remaining_courses, average_per_semester, overall_average))
 
 
-# print('|-----------------------------------|'
-#       + '\n|--------Login to the system--------|'
-#       + '\n|-----------------------------------|'
-#       + '\n'
-#       + '\n|---------------Admin---------------|'
-#       + '\n|---------------User----------------|\n')
-# login_type = input("Login: ")
-#
-# print(files)
+print('|-----------------------------------|'
+       + '\n|--------Login to the system--------|'
+       + '\n|-----------------------------------|'
+       + '\n'
+       + '\n|---------------Admin---------------|'
+       + '\n|---------------User----------------|\n')
+login_type = input("Login: ")
+print('\n')
+if login_type.lower() == 'admin':
+    admin_menu()
+    option = input('Enter option: ')
+    if option.isdigit() and int(option) in range(6):
+        option = int(option)
+        if option == 1:
+            new_student_id = int(input('Enter student ID: '))
+            add_new_record(new_student_id)
+        elif option == 2:
+            add_student_information(courses_list, students)
+    else:
+        exit(1)
+elif login_type.lower() == 'user':
+    student_menu()
+else:
+    'Not supported'
