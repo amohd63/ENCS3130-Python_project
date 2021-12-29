@@ -19,6 +19,9 @@ def student_id_validation(student_id):
 def student_year_semester_validation(student_year, student_semester):
     if '-' in student_year:
         start, end = student_year.split('-')
+        start = start.replace(' ', '')
+        end = end.replace(' ', '')
+        student_semester = student_semester.replace(' ', '')
         if start.isdigit() and end.isdigit() and student_semester.isdigit():
             return int(end) - int(start) == 1 and int(student_semester) in range(1, 4)
     return False
@@ -140,7 +143,7 @@ def update(course_list, students):
                 student = std
                 break
         semesters = student.get_semesters()
-        ave_per_semester = student.set_average_per_semester()
+        ave_per_semester = student.get_average_per_semester()
         index = 0
         for i in range(len(semesters)):
             for course in semesters[i].get_courses():
@@ -151,7 +154,7 @@ def update(course_list, students):
         grades_sum = 0
         courses = semesters[index].get_courses()
         for course in courses:
-            grades_sum += course.get_grade()
+            grades_sum += int(course.get_grade())
         ave_per_semester[index] = grades_sum / len(courses)
         overall_average = sum(ave_per_semester)/len(ave_per_semester)
         student.set_average_per_semester(ave_per_semester)
@@ -179,7 +182,7 @@ def global_statistics(students):
     for student in students:
         averages_sum += student.get_overall_average()
         hours_sum += student.get_taken_hours()
-        num_of_semesters += len(student.get_semester())
+        num_of_semesters += len(student.get_semesters())
     overall_students_average = averages_sum/len(students)
     average_hours_per_semester = hours_sum/num_of_semesters
     data = []
@@ -257,32 +260,28 @@ def student_semester(student, courses_list):
     if (';' or '-' or '/') not in student:
         raise Exception('Student information is not formatted.')
     year_semester, courses_grades = student.split(';')
-    if not re.match("20[0-9]{2}-20[0-9]{2}/[1-3]", year_semester.replace(' ', '')):
-        raise Exception('Year/Semester is not following the format.')
-    #if ',' not in courses_grades: recheck
-    #   raise Exception('Courses')
     courses_grades = courses_grades.split(',')
     year, semester_number = year_semester.split('/')
-    start_year, end_year = year.split('-')
-    if semester_number.isdigit() and int(semester_number) not in range(1, 3):
-        raise Exception('There are three semesters only (1, 2, 3).')
-    if int(end_year) - int(start_year) != 1:
-        raise Exception('The end year of the semester and the start must differ at one only.')
+    if not student_year_semester_validation(year, semester_number):
+        print(student)
+        raise Exception('Year/Semester is not following the format.')
     courses, grades = map(list, zip(*(course_grade.split() for course_grade in courses_grades)))
     i = 0
     for course, grade in zip(courses, grades):  # not done
-        if course not in courses_list or int(grade) < 0:
+        if not student_course_grade_validation(courses_list, course, grade):
             courses_grades.pop(i)
             i -= 1
         i += 1
     courses, grades = map(list, zip(*(course_grade.split() for course_grade in courses_grades)))
+    grades = np.array(grades, dtype=float)
     student_courses = [Course(courses[i], grades[i]) for i in range(len(courses))]
     remaining_courses = set(courses_list).difference(courses)
     taken_hours = 0
+    grades_sum = 0
     for course in student_courses:
         taken_hours += int(course.get_course_hours())
-    grades = np.array(grades, dtype=int)
-    semester_average = sum(grades)/len(grades)
+        grades_sum += (int(course.get_grade())*int(course.get_course_hours()))
+    semester_average = grades_sum/taken_hours
     semester = Semester(year, int(semester_number), student_courses)
     return semester, taken_hours, list(remaining_courses), semester_average
 
