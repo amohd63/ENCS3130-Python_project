@@ -3,6 +3,8 @@ import numpy as np
 from copy import deepcopy
 from Student import *
 import matplotlib.pyplot as plt
+
+
 # check if year or semester exists
 # if grade is updated
 # if course retaken
@@ -74,7 +76,8 @@ def add_student_information(courses_list: List[str], students: List[Student]):
             semesters = []
             average_per_semester = []
             overall_average = 0
-            s_semester, s_taken_hours, s_remaining_courses, s_semester_average = student_semester(student_info, courses_list)
+            s_semester, s_taken_hours, s_remaining_courses, s_semester_average = student_semester(student_info,
+                                                                                                  courses_list)
             current_student = None
             for student in students:
                 if student.get_student_id() == int(student_id):
@@ -84,7 +87,9 @@ def add_student_information(courses_list: List[str], students: List[Student]):
                 semesters.append(s_semester)
                 average_per_semester.append(s_semester_average)
                 overall_average = sum(average_per_semester) / len(average_per_semester)
-                students.append(Student(int(student_id), semesters, s_taken_hours, s_remaining_courses, average_per_semester, overall_average))
+                students.append(
+                    Student(int(student_id), semesters, s_taken_hours, s_remaining_courses, average_per_semester,
+                            overall_average))
             else:
                 semesters = current_student.get_semesters()
                 average_per_semester = current_student.get_average_per_semester()
@@ -131,7 +136,7 @@ def update(course_list, students):
         for course in courses:
             grades_sum += course.get_grade()
         ave_per_semester[index] = grades_sum / len(courses)
-        overall_average = sum(ave_per_semester)/len(ave_per_semester)
+        overall_average = sum(ave_per_semester) / len(ave_per_semester)
         student.set_average_per_semester(ave_per_semester)
         student.set_overall_average(overall_average)
 
@@ -158,8 +163,10 @@ def global_statistics(students):
         averages_sum += student.get_overall_average()
         hours_sum += student.get_taken_hours()
         num_of_semesters += len(student.get_semester())
-    overall_students_average = averages_sum/len(students)
-    average_hours_per_semester = hours_sum/num_of_semesters
+    average_hours_per_semester = hours_sum / num_of_semesters
+    overall_students_average = averages_sum / len(students)
+    print(average_hours_per_semester)
+    print(overall_students_average)
     data = []
     for student in students:
         for semester in student.get_semesters():
@@ -172,13 +179,71 @@ def global_statistics(students):
     plt.show()
 
 
+def searching(students):
+    print('|1. Search Based On Average.|' +
+          '\n |2. Search Based On Taken Hours.|' +
+          '\n |else. Back.|')
+    searching_option = input('Enter option: ')
+    if searching_option.isdigit() and int(searching_option) in range(4):
+        searching_option = int(searching_option)
+    if searching_option == 1:
+        avg = input("Please Enter the average: ")
+        print('|1. above the Average.|' +
+              '\n |2. below the Average.|' +
+              '\n |3. equal the Average.|' +
+              '\n |else. Back.|')
+        avgOption = input("Please Enter the average option: ")
+        above = []
+        below = []
+        equal = []
+        for student in students:
+            if int(student.get_overall_average()) > int(avg):
+                above.append(student.get_student_id())
+            elif int(student.get_overall_average()) < int(avg):
+                below.append(student.get_student_id())
+            else:
+                equal.append(student.get_student_id())
+        if avgOption.isdigit() and int(avgOption) in range(4):
+            avgOption = int(avgOption)
+            if avgOption == 1:
+                print(above)
+            elif avgOption == 2:
+                print(below)
+            elif avgOption == 3:
+                print(equal)
+    elif searching_option == 2:
+        takingHours = input("Please Enter the number of taking Hours: ")
+        print('|1. above the number of taking Hours.|' +
+              '\n |2. below the number of taking Hours.|' +
+              '\n |3. equal the number of taking Hours.|' +
+              '\n |else. Back.|')
+        takingHoursOption = input("Please Enter the option: ")
+        aboveHours = []
+        belowHours = []
+        equalHours = []
+        for student in students:
+            if int(student.get_taken_hours()) > int(takingHours):
+                aboveHours.append(student.get_student_id())
+            elif int(student.get_taken_hours()) < int(takingHours):
+                belowHours.append(student.get_student_id())
+            else:
+                equalHours.append(student.get_student_id())
+        if takingHoursOption.isdigit() and int(takingHoursOption) in range(4):
+            avgOption = int(takingHoursOption)
+            if avgOption == 1:
+                print(aboveHours)
+            elif avgOption == 2:
+                print(belowHours)
+            elif avgOption == 3:
+                print(equalHours)
+
 def student_semester(student, courses_list):
     if (';' or '-' or '/') not in student:
         raise Exception('Student information is not formatted.')
     year_semester, courses_grades = student.split(';')
     if not re.match("20[0-9]{2}-20[0-9]{2}/[1-3]", year_semester.replace(' ', '')):
         raise Exception('Year/Semester is not following the format.')
-    #if ',' not in courses_grades: recheck
+    # if ',' not in courses_grades: recheck
     #   raise Exception('Courses')
     courses_grades = courses_grades.split(',')
     year, semester_number = year_semester.split('/')
@@ -201,7 +266,7 @@ def student_semester(student, courses_list):
     for course in student_courses:
         taken_hours += int(course.get_course_hours())
     grades = np.array(grades, dtype=int)
-    semester_average = sum(grades)/len(grades)
+    semester_average = sum(grades) / len(grades)
     semester = Semester(year, int(semester_number), student_courses)
     return semester, taken_hours, list(remaining_courses), semester_average
 
@@ -231,21 +296,21 @@ for file in files:
             except Exception as e:
                 print(str(e))
         overall_average = sum(average_per_semester) / len(average_per_semester)
-        students.append(Student(int(file), semesters, taken_hours, remaining_courses, average_per_semester, overall_average))
-
+        students.append(
+            Student(int(file), semesters, taken_hours, remaining_courses, average_per_semester, overall_average))
 
 print('|-----------------------------------|'
-       + '\n|--------Login to the system--------|'
-       + '\n|-----------------------------------|'
-       + '\n'
-       + '\n|---------------Admin---------------|'
-       + '\n|---------------Student-------------|\n')
+      + '\n|--------Login to the system--------|'
+      + '\n|-----------------------------------|'
+      + '\n'
+      + '\n|---------------Admin---------------|'
+      + '\n|---------------Student-------------|\n')
 login_type = input("Login: ")
 print('\n')
 if login_type.lower() == 'admin':
     admin_menu()
     option = input('Enter option: ')
-    if option.isdigit() and int(option) in range(6):
+    if option.isdigit() and int(option) in range(7):
         option = int(option)
         if option == 1:
             new_student_id = int(input('Enter student ID: '))
@@ -258,17 +323,11 @@ if login_type.lower() == 'admin':
             student_statistics(students)
         elif option == 5:
             global_statistics(students)
-        elif option == 6:
-            above = []
-            below = []
-            equal = []
-            for student in students:
-                if student.get_overall_average() > 70:
-                    above.append(student.get_student_id())
-                elif student.get_overall_average() < 70:
-                    below.append(student.get_student_id())
-                else:
-                    equal.append(student.get_student_id())
+        else:
+            searching(students)
+
+
+
     else:
         exit(1)
 elif login_type.lower() == 'student':
