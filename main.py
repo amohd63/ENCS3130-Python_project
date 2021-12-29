@@ -236,6 +236,8 @@ def searching(students):
                 print(belowHours)
             elif avgOption == 3:
                 print(equalHours)
+                print(equalHours)
+                print(equalHours)
 
 def student_semester(student, courses_list):
     if (';' or '-' or '/') not in student:
