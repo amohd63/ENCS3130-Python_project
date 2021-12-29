@@ -3,12 +3,31 @@ import numpy as np
 from copy import deepcopy
 from Student import *
 import matplotlib.pyplot as plt
-
-
 # check if year or semester exists
 # if grade is updated
 # if course retaken
 #
+
+
+def student_id_validation(student_id):
+    if student_id.isdigit() and len(student_id) == 7:
+        if re.match("1[1-2][0-9]{4}", student_id):
+            return True
+    return False
+
+
+def student_year_semester_validation(student_year, student_semester):
+    if '-' in student_year:
+        start, end = student_year.split('-')
+        if start.isdigit() and end.isdigit() and student_semester.isdigit():
+            return int(end) - int(start) == 1 and int(student_semester) in range(1, 3)
+    return False
+
+
+def student_course_grade_validation(course_list, student_course, student_grade):
+    if student_course in course_list and student_grade.isdigit() and -1 < int(student_grade) < 100:
+        return True
+    return False
 
 
 def admin_menu():
@@ -26,10 +45,10 @@ def student_menu():
 
 
 def add_new_record(new_student_id: int):
-    files = [f for f in os.listdir('.') if os.path.isfile(f)]
-    if str(new_student_id) in files:
-        raise Exception('Student already exists in the system!')
-    if len(str(new_student_id)) == 7:
+    if student_id_validation(str(new_student_id)):
+        files = [f for f in os.listdir('.') if os.path.isfile(f)]
+        if str(new_student_id) in files:
+            raise Exception('Student already exists in the system!')
         f = open(str(new_student_id), 'w+')
     else:
         raise Exception('Student ID is invalid!')
@@ -38,7 +57,7 @@ def add_new_record(new_student_id: int):
 def add_student_information(courses_list: List[str], students: List[Student]):
     student_info = ''
     student_id = input('Student ID: ')
-    if student_id.isdigit() and len(student_id) == 7:
+    if student_id_validation(str(student_id)):
         try:
             add_new_record(int(student_id))
             students.append(Student(int(student_id)))
@@ -50,64 +69,62 @@ def add_student_information(courses_list: List[str], students: List[Student]):
         student_file = open(str(student_id), 'w')
         year = input('Year (start-end): ')
         semester = input('Semester (1, 2, 3): ')
-        student_info += str(year) + '/' + str(semester) + ' ; '
-        courses_grades = []
-        print('You will be asked to enter courses and grades for each student.' +
-              '\n' + 'Enter s or stop to end entering courses.')
-        while True:
-            course = input('Course ID: ')
-            if course.lower() == 's' or course.lower() == 'stop':
-                break
-            if course not in courses_list:
-                print('Course' + str(course) + ' it is not Computer Engineering course')
-                continue
-            else:
-                grade = input('Grade: ')
-                if grade.isdigit() and -1 < int(grade) < 100:
-                    courses_grades.append(str(course) + ' ' + str(grade))
-                else:
-                    print('Grade: ' + str(grade) + ' is invalid')
-                    continue
-        for i in range(len(courses_grades)):
-            student_info += courses_grades[i]
-            if i != len(courses_grades) - 1:
-                student_info += ', '
-        try:
-            semesters = []
-            average_per_semester = []
-            overall_average = 0
-            s_semester, s_taken_hours, s_remaining_courses, s_semester_average = student_semester(student_info,
-                                                                                                  courses_list)
-            current_student = None
-            for student in students:
-                if student.get_student_id() == int(student_id):
-                    current_student = student
+        if student_year_semester_validation(year, semester):
+            student_info += str(year) + '/' + str(semester) + ' ; '
+            courses_grades = []
+            print('You will be asked to enter courses and grades for each student.' +
+                  '\n' + 'Enter s or stop to end entering courses.')
+            while True:
+                course = input('Course ID: ')
+                if course.lower() == 's' or course.lower() == 'stop':
                     break
-            if current_student is None:
-                semesters.append(s_semester)
-                average_per_semester.append(s_semester_average)
-                overall_average = sum(average_per_semester) / len(average_per_semester)
-                students.append(
-                    Student(int(student_id), semesters, s_taken_hours, s_remaining_courses, average_per_semester,
-                            overall_average))
-            else:
-                semesters = current_student.get_semesters()
-                average_per_semester = current_student.get_average_per_semester()
-                taken_hours = current_student.get_taken_hours()
-                remaining_courses = current_student.get_remaining_courses()
-                semesters.append(s_semester)
-                average_per_semester.append(s_semester_average)
-                overall_average = sum(average_per_semester) / len(average_per_semester)
-                taken_hours += s_taken_hours
-                remaining_courses = set(remaining_courses).intersection(s_remaining_courses)
-                current_student.set_semesters(semesters)
-                current_student.set_average_per_semester(average_per_semester)
-                current_student.set_taken_hours(taken_hours)
-                current_student.set_remaining_courses(list(remaining_courses))
-                current_student.set_overall_average(overall_average)
-            student_file.write(str(student_info))
-        except Exception as e:
-            print(str(e))
+                else:
+                    grade = input('Grade: ')
+                    if student_course_grade_validation(courses_list, course, grade):
+                        courses_grades.append(str(course) + ' ' + str(grade))
+                    else:
+                        print('Course: ' + str(course) + ', grade: ' + str(grade) + ' are invalid')
+                        continue
+            for i in range(len(courses_grades)):
+                student_info += courses_grades[i]
+                if i != len(courses_grades) - 1:
+                    student_info += ', '
+            try:
+                semesters = []
+                average_per_semester = []
+                overall_average = 0
+                s_semester, s_taken_hours, s_remaining_courses, s_semester_average = student_semester(student_info, courses_list)
+                #current_student = None
+                #for student in students:
+                #    if student.get_student_id() == int(student_id):
+                #        current_student = student
+                #        break
+                current_student = next((student for student in students if student.get_student_id() == int(student_id)), None)
+                if current_student is None:
+                    semesters.append(s_semester)
+                    average_per_semester.append(s_semester_average)
+                    overall_average = sum(average_per_semester) / len(average_per_semester)
+                    students.append(Student(int(student_id), semesters, s_taken_hours, s_remaining_courses, average_per_semester, overall_average))
+                else:
+                    semesters = current_student.get_semesters()
+                    average_per_semester = current_student.get_average_per_semester()
+                    taken_hours = current_student.get_taken_hours()
+                    remaining_courses = current_student.get_remaining_courses()
+
+                    semesters.append(s_semester)
+                    average_per_semester.append(s_semester_average)
+                    overall_average = sum(average_per_semester) / len(average_per_semester)
+                    taken_hours += s_taken_hours
+                    remaining_courses = set(remaining_courses).intersection(s_remaining_courses)
+
+                    current_student.set_semesters(semesters)
+                    current_student.set_average_per_semester(average_per_semester)
+                    current_student.set_taken_hours(taken_hours)
+                    current_student.set_remaining_courses(list(remaining_courses))
+                    current_student.set_overall_average(overall_average)
+                student_file.write(str(student_info))
+            except Exception as e:
+                print(str(e))
     else:
         raise Exception('Student ID is invalid!')
 
@@ -136,7 +153,7 @@ def update(course_list, students):
         for course in courses:
             grades_sum += course.get_grade()
         ave_per_semester[index] = grades_sum / len(courses)
-        overall_average = sum(ave_per_semester) / len(ave_per_semester)
+        overall_average = sum(ave_per_semester)/len(ave_per_semester)
         student.set_average_per_semester(ave_per_semester)
         student.set_overall_average(overall_average)
 
@@ -163,10 +180,8 @@ def global_statistics(students):
         averages_sum += student.get_overall_average()
         hours_sum += student.get_taken_hours()
         num_of_semesters += len(student.get_semester())
-    average_hours_per_semester = hours_sum / num_of_semesters
-    overall_students_average = averages_sum / len(students)
-    print(average_hours_per_semester)
-    print(overall_students_average)
+    overall_students_average = averages_sum/len(students)
+    average_hours_per_semester = hours_sum/num_of_semesters
     data = []
     for student in students:
         for semester in student.get_semesters():
@@ -179,73 +194,13 @@ def global_statistics(students):
     plt.show()
 
 
-def searching(students):
-    print('|1. Search Based On Average.|' +
-          '\n |2. Search Based On Taken Hours.|' +
-          '\n |else. Back.|')
-    searching_option = input('Enter option: ')
-    if searching_option.isdigit() and int(searching_option) in range(4):
-        searching_option = int(searching_option)
-    if searching_option == 1:
-        avg = input("Please Enter the average: ")
-        print('|1. above the Average.|' +
-              '\n |2. below the Average.|' +
-              '\n |3. equal the Average.|' +
-              '\n |else. Back.|')
-        avgOption = input("Please Enter the average option: ")
-        above = []
-        below = []
-        equal = []
-        for student in students:
-            if int(student.get_overall_average()) > int(avg):
-                above.append(student.get_student_id())
-            elif int(student.get_overall_average()) < int(avg):
-                below.append(student.get_student_id())
-            else:
-                equal.append(student.get_student_id())
-        if avgOption.isdigit() and int(avgOption) in range(4):
-            avgOption = int(avgOption)
-            if avgOption == 1:
-                print(above)
-            elif avgOption == 2:
-                print(below)
-            elif avgOption == 3:
-                print(equal)
-    elif searching_option == 2:
-        takingHours = input("Please Enter the number of taking Hours: ")
-        print('|1. above the number of taking Hours.|' +
-              '\n |2. below the number of taking Hours.|' +
-              '\n |3. equal the number of taking Hours.|' +
-              '\n |else. Back.|')
-        takingHoursOption = input("Please Enter the option: ")
-        aboveHours = []
-        belowHours = []
-        equalHours = []
-        for student in students:
-            if int(student.get_taken_hours()) > int(takingHours):
-                aboveHours.append(student.get_student_id())
-            elif int(student.get_taken_hours()) < int(takingHours):
-                belowHours.append(student.get_student_id())
-            else:
-                equalHours.append(student.get_student_id())
-        if takingHoursOption.isdigit() and int(takingHoursOption) in range(4):
-            avgOption = int(takingHoursOption)
-            if avgOption == 1:
-                print(aboveHours)
-            elif avgOption == 2:
-                print(belowHours)
-            elif avgOption == 3:
-                print(equalHours)
-                print(equalHours)
-                print(equalHours)
-
 def student_semester(student, courses_list):
     if (';' or '-' or '/') not in student:
         raise Exception('Student information is not formatted.')
     year_semester, courses_grades = student.split(';')
     if not re.match("20[0-9]{2}-20[0-9]{2}/[1-3]", year_semester.replace(' ', '')):
         raise Exception('Year/Semester is not following the format.')
-    # if ',' not in courses_grades: recheck
+    #if ',' not in courses_grades: recheck
     #   raise Exception('Courses')
     courses_grades = courses_grades.split(',')
     year, semester_number = year_semester.split('/')
@@ -268,7 +223,7 @@ def student_semester(student, courses_list):
     for course in student_courses:
         taken_hours += int(course.get_course_hours())
     grades = np.array(grades, dtype=int)
-    semester_average = sum(grades) / len(grades)
+    semester_average = sum(grades)/len(grades)
     semester = Semester(year, int(semester_number), student_courses)
     return semester, taken_hours, list(remaining_courses), semester_average
 
@@ -299,21 +254,21 @@ for file in files:
             except Exception as e:
                 print(str(e))
         overall_average = sum(average_per_semester) / len(average_per_semester)
-        students.append(
-            Student(int(file), semesters, taken_hours, remaining_courses, average_per_semester, overall_average))
+        students.append(Student(int(file), semesters, taken_hours, remaining_courses, average_per_semester, overall_average))
+
 
 print('|-----------------------------------|'
-      + '\n|--------Login to the system--------|'
-      + '\n|-----------------------------------|'
-      + '\n'
-      + '\n|---------------Admin---------------|'
-      + '\n|---------------Student-------------|\n')
+       + '\n|--------Login to the system--------|'
+       + '\n|-----------------------------------|'
+       + '\n'
+       + '\n|---------------Admin---------------|'
+       + '\n|---------------Student-------------|\n')
 login_type = input("Login: ")
 print('\n')
 if login_type.lower() == 'admin':
     admin_menu()
     option = input('Enter option: ')
-    if option.isdigit() and int(option) in range(7):
+    if option.isdigit() and int(option) in range(6):
         option = int(option)
         if option == 1:
             new_student_id = int(input('Enter student ID: '))
@@ -326,11 +281,17 @@ if login_type.lower() == 'admin':
             student_statistics(students)
         elif option == 5:
             global_statistics(students)
-        else:
-            searching(students)
-
-
-
+        elif option == 6:
+            above = []
+            below = []
+            equal = []
+            for student in students:
+                if student.get_overall_average() > 70:
+                    above.append(student.get_student_id())
+                elif student.get_overall_average() < 70:
+                    below.append(student.get_student_id())
+                else:
+                    equal.append(student.get_student_id())
     else:
         exit(1)
 elif login_type.lower() == 'student':
