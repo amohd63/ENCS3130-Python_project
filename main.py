@@ -194,6 +194,65 @@ def global_statistics(students):
     plt.show()
 
 
+def searching(students):
+    print('|1. Search Based On Average.|' +
+          '\n |2. Search Based On Taken Hours.|' +
+          '\n |else. Back.|')
+    searching_option = input('Enter option: ')
+    if searching_option.isdigit() and int(searching_option) in range(4):
+        searching_option = int(searching_option)
+    if searching_option == 1:
+        avg = input("Please Enter the average: ")
+        print('|1. above the Average.|' +
+              '\n |2. below the Average.|' +
+              '\n |3. equal the Average.|' +
+              '\n |else. Back.|')
+        avgOption = input("Please Enter the average option: ")
+        above = []
+        below = []
+        equal = []
+        for student in students:
+            if int(student.get_overall_average()) > int(avg):
+                above.append(student.get_student_id())
+            elif int(student.get_overall_average()) < int(avg):
+                below.append(student.get_student_id())
+            else:
+                equal.append(student.get_student_id())
+        if avgOption.isdigit() and int(avgOption) in range(4):
+            avgOption = int(avgOption)
+            if avgOption == 1:
+                print(above)
+            elif avgOption == 2:
+                print(below)
+            elif avgOption == 3:
+                print(equal)
+    elif searching_option == 2:
+        takingHours = input("Please Enter the number of taking Hours: ")
+        print('|1. above the number of taking Hours.|' +
+              '\n |2. below the number of taking Hours.|' +
+              '\n |3. equal the number of taking Hours.|' +
+              '\n |else. Back.|')
+        takingHoursOption = input("Please Enter the option: ")
+        aboveHours = []
+        belowHours = []
+        equalHours = []
+        for student in students:
+            if int(student.get_taken_hours()) > int(takingHours):
+                aboveHours.append(student.get_student_id())
+            elif int(student.get_taken_hours()) < int(takingHours):
+                belowHours.append(student.get_student_id())
+            else:
+                equalHours.append(student.get_student_id())
+        if takingHoursOption.isdigit() and int(takingHoursOption) in range(4):
+            avgOption = int(takingHoursOption)
+            if avgOption == 1:
+                print(aboveHours)
+            elif avgOption == 2:
+                print(belowHours)
+            elif avgOption == 3:
+                print(equalHours)
+
+
 def student_semester(student, courses_list):
     if (';' or '-' or '/') not in student:
         raise Exception('Student information is not formatted.')
@@ -268,7 +327,7 @@ print('\n')
 if login_type.lower() == 'admin':
     admin_menu()
     option = input('Enter option: ')
-    if option.isdigit() and int(option) in range(6):
+    if option.isdigit() and int(option) in range(7):
         option = int(option)
         if option == 1:
             new_student_id = int(input('Enter student ID: '))
@@ -282,16 +341,7 @@ if login_type.lower() == 'admin':
         elif option == 5:
             global_statistics(students)
         elif option == 6:
-            above = []
-            below = []
-            equal = []
-            for student in students:
-                if student.get_overall_average() > 70:
-                    above.append(student.get_student_id())
-                elif student.get_overall_average() < 70:
-                    below.append(student.get_student_id())
-                else:
-                    equal.append(student.get_student_id())
+            searching(students)
     else:
         exit(1)
 elif login_type.lower() == 'student':
