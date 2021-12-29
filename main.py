@@ -230,6 +230,7 @@ def student_semester(student, courses_list):
 
 courses_list = []
 students = []
+
 with open('courses') as f:
     for course in f:
         courses_list.append(course.replace('\n', ''))
@@ -296,4 +297,4 @@ if login_type.lower() == 'admin':
 elif login_type.lower() == 'student':
     student_menu()
 else:
-    'Not supported'
+    'Not supported.'
