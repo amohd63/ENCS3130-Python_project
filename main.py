@@ -53,6 +53,7 @@ def add_new_record(new_student_id: int):
         if str(new_student_id) in files:
             raise Exception('Student already exists in the system!')
         f = open(str(new_student_id), 'w+')
+        f.close()
     else:
         raise Exception('Student ID is invalid!')
 
@@ -126,6 +127,7 @@ def add_student_information(courses_list: List[str], students: List[Student]):
                     current_student.set_remaining_courses(list(remaining_courses))
                     current_student.set_overall_average(overall_average)
                 student_file.write('\n' + str(student_info))
+                student_file.close()
             except Exception as e:
                 print(str(e))
     else:
@@ -136,29 +138,43 @@ def update(course_list, students):
     student_id = input('Enter student ID: ')
     student_course = input('Enter course ID: ')
     new_grade = input('Enter grade: ')
-    if student_id.isdigit() and student_course in course_list and new_grade.isdigit() and -1 < int(new_grade) < 100:
+    if student_id_validation(student_id) and student_course_grade_validation(course_list, student_course, new_grade):
         student = None
         for std in students:
             if std.get_student_id() == int(student_id):
                 student = std
                 break
-        semesters = student.get_semesters()
-        ave_per_semester = student.get_average_per_semester()
-        index = 0
-        for i in range(len(semesters)):
-            for course in semesters[i].get_courses():
-                if course == student_course:
+        if student is not None:
+            semesters = student.get_semesters()
+            ave_per_semester = student.get_average_per_semester()
+            index = 0
+            for i in range(len(semesters)):
+                for course in semesters[i].get_courses():
+                    if course.get_course_id() == student_course:
+                        index = i
+                        course.set_grade(int(new_grade))
+                        break
+            grades_sum = 0
+            courses = semesters[index].get_courses()
+            for course in courses:
+                grades_sum += int(course.get_grade())
+            ave_per_semester[index] = grades_sum / len(courses)
+            overall_average = sum(ave_per_semester)/len(ave_per_semester)
+            student.set_average_per_semester(ave_per_semester)
+            student.set_overall_average(overall_average)
+            f = open(str(student_id), 'r+')
+            lines = f.readlines()
+            year_semester = str(semesters[index].get_year()) + '/' + str(semesters[index].get_semester())
+            index = 0
+            for i in range(len(lines)):
+                if year_semester in lines[i]:
                     index = i
-                    course.set_grade(int(new_grade))
                     break
-        grades_sum = 0
-        courses = semesters[index].get_courses()
-        for course in courses:
-            grades_sum += int(course.get_grade())
-        ave_per_semester[index] = grades_sum / len(courses)
-        overall_average = sum(ave_per_semester)/len(ave_per_semester)
-        student.set_average_per_semester(ave_per_semester)
-        student.set_overall_average(overall_average)
+            new_line = re.sub(str(student_course) + ' [0-9]{1,2}', str(student_course) + ' ' + str(new_grade), lines[index])
+            lines[index] = new_line
+            f.close()
+            f = open(str(student_id), 'w')
+            f.writelines(lines)
 
 
 def student_statistics(students):
@@ -185,6 +201,8 @@ def global_statistics(students):
         num_of_semesters += len(student.get_semesters())
     overall_students_average = averages_sum/len(students)
     average_hours_per_semester = hours_sum/num_of_semesters
+    print('Overall students average: ' + str(overall_students_average))
+    print('Average hours per semester: ' + str(average_hours_per_semester))
     data = []
     for student in students:
         for semester in student.get_semesters():
@@ -194,6 +212,7 @@ def global_statistics(students):
     plt.hist(data, rwidth=.8, bins=np.arange(min(data), max(data) + 2) - 0.5)
     plt.xticks(np.arange(min(data), max(data) + 1, 1.0))
     plt.ylabel('Count')
+    plt.grid()
     plt.show()
 
 
@@ -295,7 +314,7 @@ with open('courses') as f:
 
 files = [f for f in os.listdir('.') if os.path.isfile(f)]
 for file in files:
-    if file.isdigit() and len(file) == 7 and os.stat(file).st_size != 0:
+    if student_id_validation(file) and os.stat(file).st_size != 0:
         lines = open(str(file), 'r').readlines()
         semesters = []
         taken_hours = 0
