@@ -2,6 +2,7 @@ import os, re
 import numpy as np
 from copy import deepcopy
 from Student import *
+import matplotlib.pyplot as plt
 # check if year or semester exists
 # if grade is updated
 # if course retaken
@@ -149,6 +150,28 @@ def student_statistics(students):
         print('Overall average: ' + str(std.get_overall_average()))
 
 
+def global_statistics(students):
+    averages_sum = 0
+    hours_sum = 0
+    num_of_semesters = 0
+    for student in students:
+        averages_sum += student.get_overall_average()
+        hours_sum += student.get_taken_hours()
+        num_of_semesters += len(student.get_semester())
+    overall_students_average = averages_sum/len(students)
+    average_hours_per_semester = hours_sum/num_of_semesters
+    data = []
+    for student in students:
+        for semester in student.get_semesters():
+            for course in semester.get_courses():
+                data.append(course.get_grade())
+    plt.title('Histogram Grades')
+    plt.hist(data, rwidth=.8, bins=np.arange(min(data), max(data) + 2) - 0.5)
+    plt.xticks(np.arange(min(data), max(data) + 1, 1.0))
+    plt.ylabel('Count')
+    plt.show()
+
+
 def student_semester(student, courses_list):
     if (';' or '-' or '/') not in student:
         raise Exception('Student information is not formatted.')
@@ -233,6 +256,19 @@ if login_type.lower() == 'admin':
             update(courses_list, students)
         elif option == 4:
             student_statistics(students)
+        elif option == 5:
+            global_statistics(students)
+        elif option == 6:
+            above = []
+            below = []
+            equal = []
+            for student in students:
+                if student.get_overall_average() > 70:
+                    above.append(student.get_student_id())
+                elif student.get_overall_average() < 70:
+                    below.append(student.get_student_id())
+                else:
+                    equal.append(student.get_student_id())
     else:
         exit(1)
 elif login_type.lower() == 'student':
