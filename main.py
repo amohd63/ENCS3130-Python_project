@@ -110,11 +110,13 @@ def add_student_information(courses_list: List[str], students: List[Student]):
                     average_per_semester = current_student.get_average_per_semester()
                     taken_hours = current_student.get_taken_hours()
                     remaining_courses = current_student.get_remaining_courses()
+
                     semesters.append(s_semester)
                     average_per_semester.append(s_semester_average)
                     overall_average = sum(average_per_semester) / len(average_per_semester)
                     taken_hours += s_taken_hours
                     remaining_courses = set(remaining_courses).intersection(s_remaining_courses)
+
                     current_student.set_semesters(semesters)
                     current_student.set_average_per_semester(average_per_semester)
                     current_student.set_taken_hours(taken_hours)
