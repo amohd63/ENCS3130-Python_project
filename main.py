@@ -5,15 +5,9 @@ from Student import *
 import matplotlib.pyplot as plt
 
 
-# check if year or semester exists
-# if grade is updated
-# if course retaken
-#
-
-
 def student_id_validation(student_id):
     if student_id.isdigit() and len(student_id) == 7:
-        if re.match("1[1-2][0-9]{4}", student_id):
+        if re.match("1[0-2][0-9]{4}", student_id):
             return True
     return False
 
@@ -107,18 +101,20 @@ def add_student_information(courses_list: List[str], students: List[Student]):
                 if current_student is None:
                     semesters.append(s_semester)
                     average_per_semester.append(s_semester_average)
-                    overall_average = sum(average_per_semester) / len(average_per_semester)
+                    overall_average = s_semester_average
                     students.append(Student(int(student_id), semesters, s_taken_hours, s_remaining_courses, average_per_semester, overall_average))
                 else:
                     semesters = current_student.get_semesters()
                     average_per_semester = current_student.get_average_per_semester()
                     taken_hours = current_student.get_taken_hours()
                     remaining_courses = current_student.get_remaining_courses()
+                    overall_average = current_student.get_overall_average()
 
+                    sum_of_averages = (overall_average * taken_hours) + (s_semester_average * s_taken_hours)
                     semesters.append(s_semester)
                     average_per_semester.append(s_semester_average)
-                    overall_average = sum(average_per_semester) / len(average_per_semester)
                     taken_hours += s_taken_hours
+                    overall_average = sum_of_averages / taken_hours
                     remaining_courses = set(remaining_courses).intersection(s_remaining_courses)
 
                     current_student.set_semesters(semesters)
@@ -156,7 +152,6 @@ def update(course_list, students):
                     if course.get_course_id() == student_course:
                         index = i
                         course.set_grade(int(new_grade))
-                        break
             grades_sum = 0
             courses = semesters[index].get_courses()
             for course in courses:
@@ -324,6 +319,7 @@ for file in files:
         remaining_courses = deepcopy(courses_list)
         average_per_semester = []
         overall_average = 0
+        sum_of_averages = 0
         for line in lines:
             try:
                 semester, s_taken_hours, s_remaining_courses, s_semester_average = student_semester(line, courses_list)
@@ -331,9 +327,10 @@ for file in files:
                 taken_hours += s_taken_hours
                 remaining_courses = set(remaining_courses).intersection(s_remaining_courses)
                 average_per_semester.append(s_semester_average)
+                sum_of_averages += (s_semester_average * s_taken_hours)
             except Exception as e:
                 print(str(e))
-        overall_average = sum(average_per_semester) / len(average_per_semester)
+        overall_average = sum_of_averages/taken_hours
         students.append(
             Student(int(file), semesters, taken_hours, remaining_courses, average_per_semester, overall_average))
 
