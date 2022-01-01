@@ -4,7 +4,8 @@ from Semester import *
 
 
 class Student(Semester):
-    def __init__(self, student_id: int = None, semesters: List[Semester] = None, taken_hours: int = None, remaining_courses: List[str] = None,
+    def __init__(self, student_id: int = None, semesters: List[Semester] = None, taken_hours: int = None,
+                 remaining_courses: List[str] = None,
                  average_per_semester: List[float] = None, overall_average: float = None):
         super().__init__()
         self.__student_id = student_id
@@ -49,4 +50,3 @@ class Student(Semester):
 
     def set_overall_average(self, overall_average: float):
         self.__overall_average = overall_average
-

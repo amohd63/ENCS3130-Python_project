@@ -69,7 +69,8 @@ def add_student_information(courses_list: List[str], students: List[Student]):
         year = input('Year (start-end): ')
         semester_number = input('Semester (1, 2, 3): ')
         if student_year_semester_validation(year, semester_number):
-            current_student = next((student for student in students if student.get_student_id() == int(student_id)), None)
+            current_student = next((student for student in students if student.get_student_id() == int(student_id)),
+                                   None)
             if current_student is not None:
                 flag = False
                 for semester in current_student.get_semesters():
@@ -99,12 +100,15 @@ def add_student_information(courses_list: List[str], students: List[Student]):
             average_per_semester = []
             overall_average = 0
             try:
-                s_semester, s_taken_hours, s_remaining_courses, s_semester_average = student_semester(student_info, courses_list)
+                s_semester, s_taken_hours, s_remaining_courses, s_semester_average = student_semester(student_info,
+                                                                                                      courses_list)
                 if current_student is None:
                     semesters.append(s_semester)
                     average_per_semester.append(s_semester_average)
                     overall_average = s_semester_average
-                    students.append(Student(int(student_id), semesters, s_taken_hours, s_remaining_courses, average_per_semester, overall_average))
+                    students.append(
+                        Student(int(student_id), semesters, s_taken_hours, s_remaining_courses, average_per_semester,
+                                overall_average))
                 else:
                     semesters = current_student.get_semesters()
                     average_per_semester = current_student.get_average_per_semester()
@@ -334,7 +338,7 @@ for file in files:
                 sum_of_averages += (s_semester_average * s_taken_hours)
             except Exception as e:
                 print(str(e))
-        overall_average = round(sum_of_averages/taken_hours, 2)
+        overall_average = round(sum_of_averages / taken_hours, 2)
         students.append(
             Student(int(file), semesters, taken_hours, remaining_courses, average_per_semester, overall_average))
 
