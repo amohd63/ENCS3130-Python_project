@@ -116,7 +116,7 @@ def add_student_information(courses_list: List[str], students: List[Student]):
                     semesters.append(s_semester)
                     average_per_semester.append(s_semester_average)
                     taken_hours += s_taken_hours
-                    overall_average = sum_of_averages / taken_hours
+                    overall_average = round(sum_of_averages / taken_hours, 2)
                     remaining_courses = set(remaining_courses).intersection(s_remaining_courses)
 
                     current_student.set_semesters(semesters)
@@ -202,8 +202,8 @@ def global_statistics(students):
         averages_sum += student.get_overall_average()
         hours_sum += student.get_taken_hours()
         num_of_semesters += len(student.get_semesters())
-    overall_students_average = averages_sum / len(students)
-    average_hours_per_semester = hours_sum / num_of_semesters
+    overall_students_average = round(averages_sum / len(students), 2)
+    average_hours_per_semester = round(hours_sum / num_of_semesters, 2)
     print('Overall students average: ' + str(overall_students_average))
     print('Average hours per semester: ' + str(average_hours_per_semester))
     data = []
@@ -302,7 +302,7 @@ def student_semester(student, courses_list):
     for course in student_courses:
         taken_hours += int(course.get_course_hours())
         grades_sum += (int(course.get_grade()) * int(course.get_course_hours()))
-    semester_average = grades_sum / taken_hours
+    semester_average = round(grades_sum / taken_hours, 2)
     semester = Semester(year, int(semester_number), student_courses)
     return semester, taken_hours, list(remaining_courses), semester_average
 
@@ -334,7 +334,7 @@ for file in files:
                 sum_of_averages += (s_semester_average * s_taken_hours)
             except Exception as e:
                 print(str(e))
-        overall_average = sum_of_averages/taken_hours
+        overall_average = round(sum_of_averages/taken_hours, 2)
         students.append(
             Student(int(file), semesters, taken_hours, remaining_courses, average_per_semester, overall_average))
 
