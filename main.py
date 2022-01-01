@@ -30,17 +30,19 @@ def student_course_grade_validation(course_list, student_course, student_grade):
 
 
 def admin_menu():
-    print('1. Add a new record file')
+    print('\n1. Add a new record file')
     print('2. Add new semester with student course and grades')
     print('3. Update')
     print('4. Student statistics')
     print('5. Global statistics')
-    print('6. Searching\n')
+    print('6. Search')
+    print('7. Exit')
 
 
 def student_menu():
-    print('1. Student statistics')
-    print('2. Global statistics\n')
+    print('\n1. Student statistics')
+    print('2. Global statistics')
+    print('3. Exit')
 
 
 def add_new_record(new_student_id: int):
@@ -176,18 +178,20 @@ def update(course_list, students):
             f.writelines(lines)
 
 
-def student_statistics(students):
-    student_id = input('Enter student ID: ')
-    if student_id.isdigit() and len(student_id) == 7:
+def student_statistics(students, student_id):
+    if student_id_validation(student_id):
         student_id = int(student_id)
         std = None
         for student in students:
             if student.get_student_id() == student_id:
                 std = student
-        print('Taken hours: ' + str(std.get_taken_hours()))
-        print('Remaining courses: ' + str(std.get_remaining_courses()))
-        print('Average per semester: ' + str(std.get_average_per_semester()))
-        print('Overall average: ' + str(std.get_overall_average()))
+        if std is not None:
+            print('Taken hours: ' + str(std.get_taken_hours()))
+            print('Remaining courses: ' + str(std.get_remaining_courses()))
+            print('Average per semester: ' + str(std.get_average_per_semester()))
+            print('Overall average: ' + str(std.get_overall_average()))
+        else:
+            print('Student with ID (' + str(student_id) + ') is not in the system')
 
 
 def global_statistics(students):
@@ -341,30 +345,53 @@ print('|-----------------------------------|'
       + '\n|---------------Admin---------------|'
       + '\n|---------------Student-------------|\n')
 login_type = input("Login: ")
-print('\n')
+print('')
 try:
     if login_type.lower() == 'admin':
-        admin_menu()
-        option = input('Enter option: ')
-        if option.isdigit() and int(option) in range(7):
-            option = int(option)
-            if option == 1:
-                new_student_id = int(input('Enter student ID: '))
-                add_new_record(new_student_id)
-            elif option == 2:
-                add_student_information(courses_list, students)
-            elif option == 3:
-                update(courses_list, students)
-            elif option == 4:
-                student_statistics(students)
-            elif option == 5:
-                global_statistics(students)
-            elif option == 6:
-                searching(students)
-        else:
-            exit(1)
+        while True:
+            admin_menu()
+            option = input('Enter option: ')
+            print('')
+            if option.isdigit() and int(option) in range(1, 8):
+                option = int(option)
+                if option == 1:
+                    new_student_id = int(input('Enter student ID: '))
+                    add_new_record(new_student_id)
+                elif option == 2:
+                    add_student_information(courses_list, students)
+                elif option == 3:
+                    update(courses_list, students)
+                elif option == 4:
+                    student_id = input('Enter your ID: ')
+                    student_statistics(students, student_id)
+                elif option == 5:
+                    global_statistics(students)
+                elif option == 6:
+                    searching(students)
+                elif option == 7:
+                    exit(1)
+                else:
+                    print('Not supported!')
+            else:
+                exit(1)
     elif login_type.lower() == 'student':
-        student_menu()
+        student_id = input('Enter your ID: ')
+        while True:
+            student_menu()
+            option = input('Enter option: ')
+            print('')
+            if option.isdigit() and int(option) in range(1, 4):
+                option = int(option)
+                if option == 1:
+                    student_statistics(students, student_id)
+                elif option == 2:
+                    global_statistics(students)
+                elif option == 3:
+                    exit(1)
+                else:
+                    print('Not supported!')
+            else:
+                exit(1)
     else:
         'Not supported.'
 except Exception as e:
