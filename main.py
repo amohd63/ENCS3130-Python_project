@@ -287,14 +287,18 @@ def global_statistics(students):
     plt.grid()
     plt.show()
 
-
+# search for students with given criteria
 def searching(students):
     print('|1. Search Based On Average.|' +
           '\n|2. Search Based On Taken Hours.|' +
           '\n|else. Back.|')
     searching_option = input('Enter option: ')
+    # checks if entered option is valid
     if searching_option.isdigit() and int(searching_option) in range(1, 3):
         searching_option = int(searching_option)
+    else:
+        return
+    # for average option
     if searching_option == 1:
         avg = input("Please Enter the average: ")
         print('|1. above the Average.|' +
@@ -305,6 +309,7 @@ def searching(students):
         above = []
         below = []
         equal = []
+        # finds all students who are below, above, and equal the average
         for student in students:
             if int(student.get_overall_average()) > int(avg):
                 above.append(student.get_student_id())
@@ -312,6 +317,7 @@ def searching(students):
                 below.append(student.get_student_id())
             else:
                 equal.append(student.get_student_id())
+        # prints the student ids upon user choice
         if avgOption.isdigit() and int(avgOption) in range(4):
             avgOption = int(avgOption)
             if avgOption == 1:
@@ -320,6 +326,7 @@ def searching(students):
                 print(below)
             elif avgOption == 3:
                 print(equal)
+    # for hours option
     elif searching_option == 2:
         takingHours = input("Please Enter the number of taking Hours: ")
         print('|1. above the number of taking Hours.|' +
@@ -330,6 +337,7 @@ def searching(students):
         aboveHours = []
         belowHours = []
         equalHours = []
+        # finds all students who are below, above, and equal the taken hours
         for student in students:
             if int(student.get_taken_hours()) > int(takingHours):
                 aboveHours.append(student.get_student_id())
@@ -337,6 +345,7 @@ def searching(students):
                 belowHours.append(student.get_student_id())
             else:
                 equalHours.append(student.get_student_id())
+        # prints the student ids upon user choice
         if takingHoursOption.isdigit() and int(takingHoursOption) in range(4):
             avgOption = int(takingHoursOption)
             if avgOption == 1:
